@@ -11,19 +11,16 @@ then
     rsyslogd
 fi
 
-PASSWD_FILE="/etc/pure-ftpd/passwd/pureftpd.passwd"
-
-# Load in any existing db from volume store
-if [ -e /etc/pure-ftpd/passwd/pureftpd.passwd ]
-then
-    pure-pw mkdb /etc/pure-ftpd/pureftpd.pdb -f "$PASSWD_FILE"
-fi
-
 # detect if using TLS (from volumed in file) but no flag set, set one
 if [ -e /etc/ssl/private/pure-ftpd.pem ] && [[ "$PURE_FTPD_FLAGS" != *"--tls"* ]]
 then
     echo "TLS Enabled"
     PURE_FTPD_FLAGS="$PURE_FTPD_FLAGS --tls=1 "
+fi
+
+if [ ! -e /ldap/ldap.conf ]
+then
+	cp /ldap.conf /ldap/ldap.conf
 fi
 
 # If TLS flag is set and no certificate exists, generate it
@@ -41,58 +38,6 @@ then
         /etc/ssl/private/pure-ftpd.pem \
         -out /etc/ssl/private/pure-ftpd.pem
     chmod 600 /etc/ssl/private/*.pem
-fi
-
-# Add user
-if [ ! -z "$FTP_USER_NAME" ] && [ ! -z "$FTP_USER_PASS" ] && [ ! -z "$FTP_USER_HOME" ]
-then
-    echo "Creating user..."
-
-    # make sure the home folder exists
-    mkdir -p "$FTP_USER_HOME"
-
-    # Generate the file that will be used to inject in the password prompt stdin
-    PWD_FILE="$(mktemp)"
-    echo "$FTP_USER_PASS
-$FTP_USER_PASS" > "$PWD_FILE"
-    
-    # Set uid/gid
-    PURE_PW_ADD_FLAGS=""
-    if [ ! -z "$FTP_USER_UID" ]
-    then
-        PURE_PW_ADD_FLAGS="$PURE_PW_ADD_FLAGS -u $FTP_USER_UID"
-    else
-        PURE_PW_ADD_FLAGS="$PURE_PW_ADD_FLAGS -u ftpuser"
-    fi
-    if [ ! -z "$FTP_USER_GID" ]
-    then
-        PURE_PW_ADD_FLAGS="$PURE_PW_ADD_FLAGS -g $FTP_USER_GID"
-    fi
-
-    pure-pw useradd "$FTP_USER_NAME" -f "$PASSWD_FILE" -m -d "$FTP_USER_HOME" $PURE_PW_ADD_FLAGS < "$PWD_FILE"
-
-    if [ ! -z "$FTP_USER_HOME_PERMISSION" ]
-    then
-        chmod "$FTP_USER_HOME_PERMISSION" "$FTP_USER_HOME"
-        echo " root user give $FTP_USER_NAME ftp user at $FTP_USER_HOME directory has $FTP_USER_HOME_PERMISSION permission"
-    fi
-
-    if [ ! -z "$FTP_USER_UID" ]
-    then
-        if ! [[ $(ls -ldn $FTP_USER_HOME | awk '{print $3}') = $FTP_USER_UID ]]
-        then
-            chown $FTP_USER_UID "$FTP_USER_HOME"
-            echo " root user give $FTP_USER_HOME directory $FTP_USER_UID owner"
-        fi
-    else
-        if ! [[ $(ls -ld $FTP_USER_HOME | awk '{print $3}') = 'ftpuser' ]]
-        then
-            chown ftpuser "$FTP_USER_HOME"
-            echo " root user give $FTP_USER_HOME directory ftpuser owner"
-        fi
-    fi
-
-    rm "$PWD_FILE"
 fi
 
 # Set a default value to the env var FTP_PASSIVE_PORTS
@@ -139,4 +84,4 @@ echo "Starting Pure-FTPd:"
 echo "  pure-ftpd $PURE_FTPD_FLAGS"
 
 # start pureftpd with requested flags
-exec /usr/sbin/pure-ftpd $PURE_FTPD_FLAGS
+exec /usr/sbin/pure-ftpd-ldap $PURE_FTPD_FLAGS
