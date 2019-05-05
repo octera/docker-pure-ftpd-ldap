@@ -46,13 +46,14 @@ RUN apt-get -y update && \
 	libcap2 \
 	libpam0g \
 	libssl1.1 \
-	openssl
+	openssl \
+	libldap-2.4-2
 
 COPY --from=builder /tmp/pure-ftpd/*.deb /tmp/pure-ftpd/
 
 # install the new deb files
 RUN dpkg -i /tmp/pure-ftpd/pure-ftpd-common*.deb &&\
-	dpkg -i /tmp/pure-ftpd/pure-ftpd_*.deb && \
+	dpkg -i /tmp/pure-ftpd/pure-ftpd-ldap*.deb && \
 	rm -Rf /tmp/pure-ftpd 
 
 # Prevent pure-ftpd upgrading
@@ -72,6 +73,11 @@ RUN echo "" >> /etc/rsyslog.conf && \
 COPY run.sh /run.sh
 RUN chmod u+x /run.sh
 
+#Add ldap things
+RUN mkdir /ldap
+COPY ldap.conf /ldap.conf
+RUN chmod 777 /ldap.conf
+
 # default publichost, you'll need to set this for passive support
 ENV PUBLICHOST localhost
 
@@ -79,6 +85,6 @@ ENV PUBLICHOST localhost
 VOLUME ["/home/ftpusers", "/etc/pure-ftpd/passwd"]
 
 # startup
-CMD /run.sh -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -s -A -j -Z -H -4 -E -R -G -X -x
+CMD /run.sh -l ldap:/ldap/ldap.conf -E -j -R -P $PUBLICHOST -s -A -j -Z -H -4 -E -R -G -X -x
 
 EXPOSE 21 30000-30009
