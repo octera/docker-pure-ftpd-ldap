@@ -6,7 +6,7 @@ https://hub.docker.com/r/octera/pure-ftpd-ldap
 
 [![Docker Build Status](https://img.shields.io/docker/build/octera/pure-ftpd-ldap.svg)](https://hub.docker.com/r/octera/pure-ftpd-ldap/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/octera/pure-ftpd-ldap.svg)](https://hub.docker.com/r/octera/pure-ftpd-ldap/)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%octera%2Fdocker-pure-ftpd-ldap.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_shield)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_shield)
 
 
 ----------------------------------------
@@ -240,4 +240,4 @@ Also thanks to all the awesome contributors that have made this project amazing!
 https://github.com/stilliard/docker-pure-ftpd/graphs/contributors
 
 ## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_large)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_large)
