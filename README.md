@@ -1,11 +1,12 @@
 Docker Pure-ftpd Server
 ============================
-https://hub.docker.com/r/stilliard/pure-ftpd/
+Forked from [stilliard/docker-pure-ftpd](https://github.com/stilliard/docker-pure-ftpd)
 
-[![Build Status](https://travis-ci.org/stilliard/docker-pure-ftpd.svg?branch=master)](https://travis-ci.org/stilliard/docker-pure-ftpd)
-[![Docker Build Status](https://img.shields.io/docker/build/stilliard/pure-ftpd.svg)](https://hub.docker.com/r/stilliard/pure-ftpd/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/stilliard/pure-ftpd.svg)](https://hub.docker.com/r/stilliard/pure-ftpd/)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fstilliard%2Fdocker-pure-ftpd.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fstilliard%2Fdocker-pure-ftpd?ref=badge_shield)
+https://hub.docker.com/r/octera/pure-ftpd-ldap
+
+[![Docker Build Status](https://img.shields.io/docker/build/octera/pure-ftpd-ldap.svg)](https://hub.docker.com/r/octera/pure-ftpd-ldap/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/octera/pure-ftpd-ldap.svg)](https://hub.docker.com/r/octera/pure-ftpd-ldap/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_shield)
 
 
 ----------------------------------------
@@ -16,10 +17,10 @@ https://hub.docker.com/r/stilliard/pure-ftpd/
 
 Pull down latest version with docker:
 ```bash
-docker pull stilliard/pure-ftpd:hardened
+docker pull octera/pure-ftpd-ldap:hardened
 ```
 
-**Often needing to run as `sudo`, e.g. `sudo docker pull stilliard/pure-ftpd`**
+**Often needing to run as `sudo`, e.g. `sudo docker pull octera/pure-ftpd-ldap`**
 
 ----------------------------------------
 
@@ -29,16 +30,16 @@ This is because rebuilding the entire docker image via a fork can be *very* slow
 To change the command run on start you could use the `command:` option if using `docker-compose`, or with [`docker run`](https://docs.docker.com/engine/reference/run/) directly you could use:
 
 ```
-docker run --rm -d --name ftpd_server -p 21:21 -p 30000-30009:30000-30009 stilliard/pure-ftpd:hardened bash /run.sh -c 30 -C 10 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P localhost -p 30000:30059
+docker run --rm -d --name ftpd_server -p 21:21 -p 30000-30009:30000-30009 octera/pure-ftpd-ldap:hardened bash /run.sh -c 30 -C 10 -l ldap:/ldap/ldap.conf -E -j -R -P localhost -p 30000:30059
 ```
 
 To extend it you can create a new project with a `DOCKERFILE` like so:
 
 ```
-FROM stilliard/pure-ftpd
+FROM octera/pure-ftpd-ldap
 
 # e.g. you could change the defult command run:
-CMD /run.sh -c 30 -C 10 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -p 30000:30059
+CMD /run.sh -c 30 -C 10 -l ldap:/ldap/ldap.conf -E -j -R -P $PUBLICHOST -p 30000:30059
 ```
 
 *Then you can build your own image, `docker build --rm -t my-pure-ftp .`, where my-pure-ftp is the name you want to build as*
@@ -48,9 +49,9 @@ CMD /run.sh -c 30 -C 10 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLI
 Starting it 
 ------------------------------
 
-`docker run -d --name ftpd_server -p 21:21 -p 30000-30009:30000-30009 -e "PUBLICHOST=localhost" stilliard/pure-ftpd:hardened`
+`docker run -d --name ftpd_server -p 21:21 -p 30000-30009:30000-30009 -e "PUBLICHOST=localhost" octera/pure-ftpd-ldap:hardened`
 
-*Or for your own image, replace stilliard/pure-ftpd with the name you built it with, e.g. my-pure-ftp*
+*Or for your own image, replace octera/pure-ftpd-ldap with the name you built it with, e.g. my-pure-ftp*
 
 You can also pass ADDED_FLAGS as an env variable to add additional options such as --tls to the pure-ftpd command.  
 e.g. ` -e "ADDED_FLAGS=--tls=2" `
@@ -70,7 +71,7 @@ To create a user on the ftp container, use the following environment variables: 
 
 Example usage:
 
-`docker run -e FTP_USER_NAME=bob -e FTP_USER_PASS=12345 -e FTP_USER_HOME=/home/bob stilliard/pure-ftpd`
+`docker run -e FTP_USER_NAME=bob -e FTP_USER_PASS=12345 -e FTP_USER_HOME=/home/bob octera/pure-ftpd-ldap`
 
 If you wish to set the `UID` & `GID` of the FTP user, use the `FTP_USER_UID` & `FTP_USER_GID` environment variables.
 
@@ -82,20 +83,6 @@ To use passive ports in a different range (*eg*: `10000-10009`), use the followi
 `docker run -e FTP_PASSIVE_PORTS=10000:10009 --expose=10000-10009 -p 21:21 -p 10000-10009:10000-10009`
 
 You may need the `--expose=` option, because default passive ports exposed are `30000` to `30009`.
-
-Example usage once inside
-------------------------------
-
-Create an ftp user: `e.g. bob with chroot access only to /home/ftpusers/bob`
-```bash
-pure-pw useradd bob -f /etc/pure-ftpd/passwd/pureftpd.passwd -m -u ftpuser -d /home/ftpusers/bob
-```
-*No restart should be needed.*
-
-*If you have any trouble with volume permissions due to the **uid** or **gid** of the created user you can change the **-u** flag for the uid you would like to use and/or specify **-g** with the group id as well. For more information see issue [#35](https://github.com/stilliard/docker-pure-ftpd/issues/35#issuecomment-325583705).*
-
-More info on usage here: https://download.pureftpd.org/pure-ftpd/doc/README.Virtual-Users
-
 
 Test your connection
 -------------------------
@@ -109,8 +96,7 @@ ftp -p localhost 21
 Docker compose
 -------------------------
 Docker compose can help you simplify the orchestration of your containers.   
-We have a simple [example of the docker compose](https://github.com/stilliard/docker-pure-ftpd/blob/master/docker-compose.yml).  
-& here's a [more detailed example using wordpress](https://github.com/stilliard/docker-pure-ftpd/wiki/Docker-stack-with-Wordpress-&-FTP) with ftp using this image.
+We have a simple [example of the docker compose](https://github.com/octera/docker-pure-ftpd-ldap/blob/master/docker-compose.yml).  
 
 -------------------------
 
@@ -145,22 +131,9 @@ Tags available for different versions
 **Latest versions**
 
 - `latest` - latest working version
-- `jessie-latest` - latest but will always remain on debian jessie
 - `hardened` - latest + [more secure/hardened defaults](https://github.com/stilliard/docker-pure-ftpd/issues/10)
 
-**Previous version before tags were introduced**
-
-- `wheezy-1.0.36` - incase you want to roll back to before we started using debian jessie
-
-**Specific pure-ftpd versions**
-
-- `jessie-1.x.x` - jessie + specific versions, e.g. jessie-1.0.36
-- `hardened-1.x.x` - hardened + specific versions
-
 *Check the tags on github for available versions, feel free to submit issues and/or pull requests for newer versions*
-
-Usage of specific tags: 
-`sudo docker pull stilliard/pure-ftpd:hardened-1.0.36`
 
 ----------------------------------------
 
@@ -171,7 +144,7 @@ Our default pure-ftpd options explained
 /usr/sbin/pure-ftpd # path to pure-ftpd executable
 -c 5 # --maxclientsnumber (no more than 5 people at once)
 -C 5 # --maxclientsperip (no more than 5 requests from the same ip)
--l puredb:/etc/pure-ftpd/pureftpd.pdb # --login (login file for virtual users)
+-l ldap:/ldap/ldap.conf # --login (login file for virtual users)
 -E # --noanonymous (only real users)
 -j # --createhomedir (auto create home directory if it doesnt already exist)
 -R # --nochmod (prevent usage of the CHMOD command)
@@ -194,49 +167,19 @@ There are a few spots onto which you can mount a docker volume to configure the
 server and persist uploaded data. It's recommended to use them in production. 
 
   - `/home/ftpusers/` The ftp's data volume (by convention). 
-  - `/etc/pure-ftpd/passwd` A directory containing the single `pureftps.passwd`
-    file which contains the user database (i.e., all virtual users, their
-    passwords and their home directories). This is read on startup of the
-    container and updated by the `pure-pw useradd -f /etc/pure-
-    ftpd/passwd/pureftpd.passwd ...` command.
+  - `/ldap/` A directory containing the single `ldap.conf`
+    file which contains the information to connect with ldap
   - `/etc/ssl/private/` A directory containing a single `pure-ftpd.pem` file
     with the server's SSL certificates for TLS support. Optional TLS is
     automatically enabled when the container finds this file on startup.
-
-Keep user database in a volume
-------------------------------
-You may want to keep your user database through the successive image builds. It is possible with Docker volumes.
-
-Create a named volume:
-```
-docker volume create --name my-db-volume
-```
-
-Specify it when running the container:
-```
-docker run -d --name ftpd_server -p 21:21 -p 30000-30009:30000-30009 -e "PUBLICHOST=localhost" -v my-db-volume:/etc/pure-ftpd/passwd stilliard/pure-ftpd:hardened
-```
-
-When an user is added, you need to use the password file which is in the volume:
-```
-pure-pw useradd bob -f /etc/pure-ftpd/passwd/pureftpd.passwd -m -u ftpuser -d /home/ftpusers/bob
-```
-(Thanks to the -m option, you don't need to call *pure-pw mkdb* with this syntax).
-
-
-Changing a password
----------------------
-e.g. to change the password for user "bob":
-```
-pure-pw passwd bob -f /etc/pure-ftpd/passwd/pureftpd.passwd -m
-```
+  - `/secret/` a volume with tls.key & tls.cert file from cert-manager in kubernetes env
 
 ----------------------------------------
 Development (via git clone)
 ```bash
 # Clone the repo
-git clone https://github.com/stilliard/docker-pure-ftpd.git
-cd docker-pure-ftpd
+git clone https://github.com/octera/docker-pure-ftpd-ldap.git
+cd docker-pure-ftpd-ldap
 # Build the image
 make build
 # Run container in background:
@@ -277,6 +220,11 @@ openssl req -x509 -nodes -newkey rsa:2048 -sha256 -keyout \
 chmod 600 /etc/ssl/private/*.pem
 ```
 
+TLS in Kubernetes
+-----------------
+
+Mount a /secret volume pointed out the secret from cert manager, it will automacally create /secret/tls.key & /secret/tls.cert. The run.sh file will do the rest in order to create the /etc/ssl/private/pure-ftpd.pem file
+
 Automatic TLS certificate generation
 ------------------------------
 
@@ -298,4 +246,4 @@ Also thanks to all the awesome contributors that have made this project amazing!
 https://github.com/stilliard/docker-pure-ftpd/graphs/contributors
 
 ## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fstilliard%2Fdocker-pure-ftpd.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fstilliard%2Fdocker-pure-ftpd?ref=badge_large)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Foctera%2Fdocker-pure-ftpd-ldap?ref=badge_large)
