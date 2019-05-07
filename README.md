@@ -172,6 +172,7 @@ server and persist uploaded data. It's recommended to use them in production.
   - `/etc/ssl/private/` A directory containing a single `pure-ftpd.pem` file
     with the server's SSL certificates for TLS support. Optional TLS is
     automatically enabled when the container finds this file on startup.
+  - `/secret/` a volume with tls.key & tls.cert file from cert-manager in kubernetes env
 
 ----------------------------------------
 Development (via git clone)
@@ -218,6 +219,11 @@ openssl req -x509 -nodes -newkey rsa:2048 -sha256 -keyout \
     -out /etc/ssl/private/pure-ftpd.pem
 chmod 600 /etc/ssl/private/*.pem
 ```
+
+TLS in Kubernetes
+-----------------
+
+Mount a /secret volume pointed out the secret from cert manager, it will automacally create /secret/tls.key & /secret/tls.cert. The run.sh file will do the rest in order to create the /etc/ssl/private/pure-ftpd.pem file
 
 Automatic TLS certificate generation
 ------------------------------
