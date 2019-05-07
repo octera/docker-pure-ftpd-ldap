@@ -11,6 +11,13 @@ then
     rsyslogd
 fi
 
+# detect if secret folder with cert is mounted, if yes generate PEM
+if [ -e /secret/tls.key ] && [ -e /secret/tls.crt ]
+then
+    echo "Creating PEM file from key and crt"
+    cat /secret/tls.crt /secret/tls.key > /etc/ssl/private/pure-ftpd.pem
+fi
+
 # detect if using TLS (from volumed in file) but no flag set, set one
 if [ -e /etc/ssl/private/pure-ftpd.pem ] && [[ "$PURE_FTPD_FLAGS" != *"--tls"* ]]
 then
